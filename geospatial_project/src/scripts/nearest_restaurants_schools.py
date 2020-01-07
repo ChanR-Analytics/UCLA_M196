@@ -14,3 +14,10 @@ coordinates = list(zip(coord_df['latitude'].tolist(), coord_df['longitude'].toli
 gmaps = googlemaps.Client(key=getpass("Type in your API key: "))
 
 # Search Restaurants Within a 10 Meter Radius from Each School
+nearest_restaurant_results = []
+
+for coord in coordinates:
+    search_result = gmaps.places('restaurants', location=coord, radius=10)
+    nearest_restaurant_results.append(search_result)
+
+  
