@@ -17,7 +17,9 @@ gmaps = googlemaps.Client(key=getpass("Type in your API key: "))
 nearest_restaurant_results = []
 
 for coord in coordinates:
-    search_result = gmaps.places('restaurants', location=coord, radius=10)
+    search_result = gmaps.places('restaurants', location=coord, radius=10, open_now=True)
     nearest_restaurant_results.append(search_result)
 
-nearest_restaurant_results[0]['results'][0]
+
+# Creating a Data Frame of Results
+nearest_restaurant_results[0]['results'][1]['geometry']
