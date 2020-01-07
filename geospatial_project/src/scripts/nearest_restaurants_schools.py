@@ -7,7 +7,6 @@ from getpass import getpass
 # Getting Coordinates of Schools
 coord_path = getcwd() + "/geospatial_project/data/csv"
 coord_df = pd.read_csv(f"{coord_path}/{listdir(coord_path)[0]}")
-
 coordinates = list(zip(coord_df['latitude'].tolist(), coord_df['longitude'].tolist()))
 
 # Establishing Google Maps Client with API Key
@@ -47,3 +46,7 @@ while school_count < len(nearest_restaurant_results):
     school_count += 1
 
 frame_list = [pd.DataFrame.from_dict(frame_dict) for frame_dict in frame_dict_list]
+
+school_names = coord_df['school_name'].tolist()
+
+school_results_dict = {school: frame_list[i] for i, school in enumerate(school_names)}
