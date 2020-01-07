@@ -19,7 +19,7 @@ print(coordinates)
 
 gmaps = googlemaps.Client(key=getpass("Type in your API key: "))
 
-place_result = gmaps.places('restaurants', location=coordinates[0])
+place_result = gmaps.places('restaurant', radius=10, location=coordinates[1])
 place_result.keys()
 place_result['results'][0].keys()
 place_result['results'][0]['name']
@@ -28,3 +28,4 @@ place_result['results'][0]['user_ratings_total']
 place_result['results'][0]['photos']
 place_result['results'][0]['photos'][0]['html_attributions']
 place_result['results'][0]['photos'][0]['photo_reference']
+len(place_result['results'])
