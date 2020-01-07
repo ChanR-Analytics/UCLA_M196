@@ -22,4 +22,9 @@ for coord in coordinates:
 
 
 # Creating a Data Frame of Results
-nearest_restaurant_results[0]['results'][1]['geometry']
+names = []
+latitudes = []
+longitudes = []
+total_user_ratings = []
+ratings = []
+nearest_restaurant_results[0]['results'][1]
