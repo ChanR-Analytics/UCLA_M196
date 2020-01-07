@@ -48,4 +48,13 @@ while count < len(school_names):
     coordinates.append(coordPair)
     count += 1
 
-coordinates
+lat_vals = []
+long_vals = []
+
+for coord in coordinates:
+    lat_vals.append(coord[1])
+    long_vals.append(coord[2])
+
+coord_df = pd.DataFrame.from_dict({'school_name': school_names, 'latitude': lat_vals, 'longitude': long_vals})
+csv_path = getcwd() + "/geospatial_project/data/csv"
+coord_df.to_csv(f"{csv_path}/school_coordinates.csv", index=False)
