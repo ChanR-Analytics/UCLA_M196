@@ -20,4 +20,4 @@ for coord in coordinates:
     search_result = gmaps.places('restaurants', location=coord, radius=10)
     nearest_restaurant_results.append(search_result)
 
-  
+nearest_restaurant_results[0]['results'][0]
