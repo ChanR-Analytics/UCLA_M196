@@ -16,8 +16,10 @@ class nearest_restaurants:
     def make_coordinates(self):
         self.lat = self.df['latitude'].tolist()
         self.long = self.df['longitude'].tolist()
-        self.coordinates = list(zip(self.lat, self.long))
-        return self.coordinates
+        coordinates = list(zip(self.lat, self.long))
+        return coordinates
+
+    self.coordinates = self.make_coordinates() 
 
     def search_results(self, query, radius, now):
         self.query = query
