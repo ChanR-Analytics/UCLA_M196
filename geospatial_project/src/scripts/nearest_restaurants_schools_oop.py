@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
 import googlemaps
+from haversine import haversine
 from os import listdir
+
+
 
 class nearest_restaurants:
     def __init__(self, data_path):
@@ -24,7 +27,7 @@ class nearest_restaurants:
         self.radius = radius
         self.now = now
         self.coordinates = self.make_coordinates()
-        
+
         self.results = []
         for coordinate in self.coordinates:
             self.result = self.gmaps.places(self.query, location=coordinate, radius=self.radius, open_now=self.now)
@@ -32,5 +35,50 @@ class nearest_restaurants:
 
         return self.results
 
-    def frame_process(self):
-        return self.df
+    def frame_process(self, results):
+        frame_dict_list = []
+        school_count = 0
+        while school_count < len(results):
+            names = []
+            latitudes = []
+            longitudes = []
+            total_user_ratings = []
+            ratings = []
+
+            for i in range(len(results[school_count]['results'])):
+                name = results[school_count]['results'][i]['name']
+                latitude = results[school_count]['results'][i]['geometry']['location']['lat']
+                longitude = results[school_count]['results'][i]['geometry']['location']['lng']
+                total_user_rating = results[school_count]['results'][i]['user_ratings_total']
+                rating = results[school_count]['results'][i]['rating']
+                names.append(name)
+                latitudes.append(latitude)
+                longitudes.append(longitude)
+                total_user_ratings.append(total_user_rating)
+                ratings.append(rating)
+
+            frame_dict = {'names': names, 'latitudes': latitudes, 'longitudes': longitudes, 'total_user_ratings': total_user_ratings, 'rating': ratings}
+            frame_dict_list.append(frame_dict)
+            school_count += 1
+
+        frame_list = [pd.DataFrame.from_dict(frame_dict) for frame_dict in frame_dict_list]
+        school_names = self.df['school_name'].tolist()
+
+        return {school: frame_list[i] for i, school in enumerate(school_names)}
+
+    def haversine_distance(self, school_results_dict):
+        distance_dict = {}
+        school_coordinates = self.make_coordinates()
+        school_coord_dict = {school: school_coordinates[i] for i, school in enumerate(self.df['school_name'].tolist())}
+
+        for school in list(school_results_dict.keys()):
+            distance_list = []
+            restaurant_lat = school_results_dict[school]['latitudes'].tolist()
+            restaurant_long = school_results_dict[school]['longitudes'].tolist()
+            restaurant_coordinates = list(zip(restaurant_lat, restaurant_long))
+
+            for restaurant_coordinate in restaurant_coordinates:
+                dist = haversine(school_coord_dict[school], restaurant_coordinate, unit='mi')
+                distance_list.append(dist)
+            distance_dict[school] = distance_list
+        return distance_dict
