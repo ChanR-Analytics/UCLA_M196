@@ -19,13 +19,12 @@ class nearest_restaurants:
         coordinates = list(zip(self.lat, self.long))
         return coordinates
 
-    self.coordinates = self.make_coordinates() 
-
     def search_results(self, query, radius, now):
         self.query = query
         self.radius = radius
         self.now = now
-
+        self.coordinates = self.make_coordinates()
+        
         self.results = []
         for coordinate in self.coordinates:
             self.result = self.gmaps.places(self.query, location=coordinate, radius=self.radius, open_now=self.now)
