@@ -6,14 +6,11 @@ from os import listdir
 class nearest_restaurants:
     def __init__(self, data_path):
         self.data_path = data_path
-
-    def initialize(self):
         self.key = "AIzaSyBHWiHNgsyEL8IzkG42rcZYmqzjIXXHswE"
         self.gmaps = googlemaps.Client(key = self.key)
-        return self.gmaps
+        self.df = pd.read_csv(f"{self.data_path}/{listdir(data_path)[0]}")
 
     def view_schools(self):
-        self.df = pd.read_csv(f"{data_path}/{listdir(data_path)[0]}")
         return self.df
 
     def make_coordinates(self):
@@ -35,4 +32,4 @@ class nearest_restaurants:
         return self.results
 
     def frame_process(self):
-        return self.df 
+        return self.df
