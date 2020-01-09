@@ -17,7 +17,10 @@ class nearest_restaurants:
         return self.df
 
     def make_coordinates(self):
-        
+        self.lat = self.df['latitude'].tolist()
+        self.long = self.df['longitude'].tolist()
+        self.coordinates = list(zip(self.lat, self.long))
+        return self.coordinates
 
     def search_results(self, query, radius, now):
         self.query = query
@@ -25,6 +28,11 @@ class nearest_restaurants:
         self.now = now
 
         self.results = []
+        for coordinate in self.coordinates:
+            self.result = self.gmaps.places(self.query, location=coordinate, radius=self.radius, open_now=self.now)
+            self.results.append(self.result)
 
-        for name in self.school_names:
-            self.result = self.gmaps.places(self.query, )
+        return self.results
+
+    def frame_process(self):
+        return self.df 
