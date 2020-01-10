@@ -66,7 +66,7 @@ class nearest_restaurants:
 
         return {school: frame_list[i] for i, school in enumerate(school_names)}
 
-    def haversine_distance(self, school_results_dict):
+    def haversine_distance(self, school_results_dict, metric):
         distance_dict = {}
         school_coordinates = self.make_coordinates()
         school_coord_dict = {school: school_coordinates[i] for i, school in enumerate(self.df['school_name'].tolist())}
@@ -78,7 +78,7 @@ class nearest_restaurants:
             restaurant_coordinates = list(zip(restaurant_lat, restaurant_long))
 
             for restaurant_coordinate in restaurant_coordinates:
-                dist = haversine(school_coord_dict[school], restaurant_coordinate, unit='mi')
+                dist = haversine(school_coord_dict[school], restaurant_coordinate, unit=metric) 
                 distance_list.append(dist)
             distance_dict[school] = distance_list
         return distance_dict
