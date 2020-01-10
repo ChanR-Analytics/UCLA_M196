@@ -14,6 +14,6 @@ nr_frame_dict = nr.frame_process(nr_results)
 
 nr_frame_dict['Arcadia High School'].head()
 
-haversine_results = nr.haversine_distance(nr_frame_dict)
+haversine_results = nr.haversine_distance(nr_frame_dict, 'm')
 
 haversine_results['Arcadia High School']
