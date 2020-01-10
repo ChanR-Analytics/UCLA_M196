@@ -30,4 +30,4 @@ distance_frame_dict = {}
 duration_frame_dict = {}
 
 len(result_dict['Arcadia High School']['rows'][0]['elements'])
-result_dict['Arcadia High School']['rows'][0]['elements'][0]['distance']
+result_dict['Arcadia High School']['rows'][0]['elements'][1]
