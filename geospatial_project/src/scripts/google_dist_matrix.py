@@ -26,4 +26,23 @@ for school in list(nr_frame_dict.keys()):
     result = gmaps.distance_matrix(origins=school_coord_dict[school], destinations=restaurant_coordinates, mode='walking')
     result_dict[school] = result
 
-result_dict['Arcadia High School']['rows'][0]['elements'][0]['distance']['text']
+distance_frame_dict = {}
+duration_frame_dict = {}
+
+for school in list(school_coord_dict.keys()):
+    distances = []
+    durations = []
+    count = 0
+    while count < len(result_dict[school]['rows'][0]['elements']):
+        dist = result_dict[school]['rows'][0]['elements'][count]['distance']['text']
+        dur = result_dict[school]['rows'][0]['elements'][count]['duration']['text']
+        distances.append(dist)
+        durations.append(dur)
+        count += 1
+    distance_frame_dict[school] = distances
+    duration_frame_dict[school] = durations
+
+
+
+len(result_dict['Arcadia High School']['rows'][0]['elements'])
+result_dict['Arcadia High School']['rows'][0]['elements'][0]['distance']
