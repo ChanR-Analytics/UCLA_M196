@@ -9,7 +9,7 @@ txt_path = getcwd() + "/geospatial_project/data/txt"
 listdir(txt_path)
 
 school_names = []
-with open(f"{txt_path}/{listdir(txt_path)[0]}", "r") as my_file:
+with open(f"{txt_path}/{listdir(txt_path)[1]}", "r") as my_file:
     for line in my_file.readlines():
         line = line.replace("\n", "")
         school_names.append(line)
