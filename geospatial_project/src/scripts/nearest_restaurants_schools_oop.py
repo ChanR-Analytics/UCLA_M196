@@ -78,7 +78,42 @@ class nearest_restaurants:
             restaurant_coordinates = list(zip(restaurant_lat, restaurant_long))
 
             for restaurant_coordinate in restaurant_coordinates:
-                dist = haversine(school_coord_dict[school], restaurant_coordinate, unit=metric) 
+                dist = haversine(school_coord_dict[school], restaurant_coordinate, unit=metric)
                 distance_list.append(dist)
             distance_dict[school] = distance_list
         return distance_dict
+
+    def google_distance(self, frame_dict, transporation_mode):
+        
+        school_coordinates = self.make_coordinates()
+        school_coordinate_dict = {school : school_coordinates[i] for i, school in enumerate(school_coordinates)}
+        result_dict = {}
+
+        for school in list(frame_dict.keys()):
+            latitudes = frame_dict[school]['latitudes'].tolist()
+            longitudes = frame_dict[school]['longitudes'].tolist()
+            restaurant_coordinates = list(zip(latitudes, longitudes))
+            result = self.gmaps.distance_matrix(origins=school_coordinate_dict[school], destinations=restaurant_coordinates, mode=transportation_mode)
+            result_dict[school] = result
+
+        frame_dict = {}
+
+        for school in list(result_dict.keys()):
+            results = result_dict[school]['rows'][0]['elements']
+            distances = []
+            durations = []
+
+            for element in results:
+
+                if element['status'] == 'ZERO_RESULTS':
+                    distance = 'NaN'
+                    duration = 'NaN'
+                else:
+                    distance = element['distance']['text']
+                    duration = element['duration']['text']
+                distances.append(distance)
+                durations.append(duration)
+
+            frame_dict[school] = pd.DataFrame.from_dict({'distances': distances, 'durations': durations})
+
+        return frame_dict
