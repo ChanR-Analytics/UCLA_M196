@@ -84,16 +84,16 @@ class nearest_restaurants:
         return distance_dict
 
     def google_distance(self, frame_dict, transporation_mode):
-        
+
         school_coordinates = self.make_coordinates()
-        school_coordinate_dict = {school : school_coordinates[i] for i, school in enumerate(school_coordinates)}
+        school_coordinate_dict = {school : school_coordinates[i] for i, school in enumerate(self.df['school_name'].tolist())}
         result_dict = {}
 
         for school in list(frame_dict.keys()):
             latitudes = frame_dict[school]['latitudes'].tolist()
             longitudes = frame_dict[school]['longitudes'].tolist()
             restaurant_coordinates = list(zip(latitudes, longitudes))
-            result = self.gmaps.distance_matrix(origins=school_coordinate_dict[school], destinations=restaurant_coordinates, mode=transportation_mode)
+            result = self.gmaps.distance_matrix(origins=school_coordinate_dict[school], destinations=restaurant_coordinates, mode=transporation_mode)
             result_dict[school] = result
 
         frame_dict = {}
