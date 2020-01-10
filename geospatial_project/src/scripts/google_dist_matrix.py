@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from geospatial_project.src.scripts.nearest_restaurants_schools_oop import nearest_restaurants
-import googlemaps
 from os import getcwd, listdir
 
 # Getting Schools
@@ -17,7 +16,7 @@ nr_frame_dict = nr.frame_process(nr_results)
 # Using Distance Matrix API to Get Various Route Distances
 google_dist_dict = {}
 
-gmaps = googlemaps.Client(key="AIzaSyBHWiHNgsyEL8IzkG42rcZYmqzjIXXHswE")
+gmaps = nr.gmaps
 
 result_dict = {}
 for school in list(nr_frame_dict.keys()):
