@@ -25,3 +25,5 @@ for school in list(nr_frame_dict.keys()):
     restaurant_coordinates = list(zip(restaurant_lat, restaurant_long))
     result = gmaps.distance_matrix(origins=school_coord_dict[school], destinations=restaurant_coordinates, mode='walking')
     result_dict[school] = result
+
+result_dict['Arcadia High School']['rows'][0]['elements'][0]['distance']['text']
