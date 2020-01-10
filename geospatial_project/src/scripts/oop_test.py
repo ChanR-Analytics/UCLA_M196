@@ -8,6 +8,8 @@ nr.view_schools()
 nr.make_coordinates()
 nr_results = nr.search_results(query='restaurants', radius=10, now=True)
 
+nr_results[0]['results'][0]
+
 nr_frame_dict = nr.frame_process(nr_results)
 
 nr_frame_dict['Arcadia High School'].head()
