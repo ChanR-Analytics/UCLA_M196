@@ -56,7 +56,7 @@ class nearest_restaurants:
                     if 'price_level' in result.keys():
                         price_level = result['price_level']
                     else:
-                        price_level = 'NaN'
+                        price_level = float('nan') 
                     names.append(name)
                     latitudes.append(latitude)
                     longitudes.append(longitude)
@@ -66,7 +66,7 @@ class nearest_restaurants:
                 format_result_dict[school] = {'names': names, 'latitudes': latitudes, 'longitudes': longitudes, 'total_user_ratings': total_user_ratings, 'ratings': ratings, 'price_levels': price_levels}
 
         format_result_df_dict = {school: pd.DataFrame.from_dict(format_result_dict[school]) for school in format_result_dict.keys()}
-        return format_result_df_dict 
+        return format_result_df_dict
 
 
 
@@ -110,14 +110,14 @@ class nearest_restaurants:
             for element in results:
 
                 if element['status'] == 'ZERO_RESULTS':
-                    distance = 'NaN'
-                    duration = 'NaN'
+                    distance = float('nan')
+                    duration = float('nan')
                 else:
                     distance = element['distance']['text']
                     duration = element['duration']['text']
                 distances.append(distance)
                 durations.append(duration)
 
-            frame_dict[school] = pd.DataFrame.from_dict({'distances': distances, 'durations': durations})
+            frame_dict[school] = pd.DataFrame.from_dict({'distances': distances, f'{transporation_mode} duration': durations})
 
         return frame_dict

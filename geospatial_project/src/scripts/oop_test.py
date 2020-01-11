@@ -33,6 +33,5 @@ haversine_results = nr.haversine_distance(nr_frame_dict, 'm')
 
 google_results = nr.google_distance(nr_frame_dict, transporation_mode='walking')
 
-for school in nr_frame_dict.keys():
-    display(nr_frame_dict[school])
-    print("-".join(["--------------------------" for i in range(5)]))
+for school in google_results.keys():
+    display(google_results[school].dropna().reset_index().drop('index', axis=1))
