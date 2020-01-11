@@ -25,7 +25,6 @@ while count < len(nr_results):
     result_dict[school_names[count]] = [result, result2, result3]
     count += 1
 
-# BOSS MAN 
 
 result_dict['Arcadia High School'][2]
 
