@@ -35,36 +35,40 @@ class nearest_restaurants:
 
         return self.results
 
-    def frame_process(self, results):
-        frame_dict_list = []
-        school_count = 0
-        while school_count < len(results):
+
+    def frame_process(self, result_dict):
+        format_result_dict = {}
+
+        for school in list(result_dict.keys()):
             names = []
             latitudes = []
             longitudes = []
             total_user_ratings = []
             ratings = []
+            price_levels = []
+            for result_structure in result_dict[school]:
+                for result in result_structure['results']:
+                    name = result['name']
+                    latitude = result['geometry']['location']['lat']
+                    longitude = result['geometry']['location']['lng']
+                    user_rating = result['user_ratings_total']
+                    rating = result['rating']
+                    if 'price_level' in result.keys():
+                        price_level = result['price_level']
+                    else:
+                        price_level = 'NaN'
+                    names.append(name)
+                    latitudes.append(latitude)
+                    longitudes.append(longitude)
+                    total_user_ratings.append(user_rating)
+                    ratings.append(rating)
+                    price_levels.append(price_level)
+                format_result_dict[school] = {'names': names, 'latitudes': latitudes, 'longitudes': longitudes, 'total_user_ratings': total_user_ratings, 'ratings': ratings, 'price_levels': price_levels}
 
-            for i in range(len(results[school_count]['results'])):
-                name = results[school_count]['results'][i]['name']
-                latitude = results[school_count]['results'][i]['geometry']['location']['lat']
-                longitude = results[school_count]['results'][i]['geometry']['location']['lng']
-                total_user_rating = results[school_count]['results'][i]['user_ratings_total']
-                rating = results[school_count]['results'][i]['rating']
-                names.append(name)
-                latitudes.append(latitude)
-                longitudes.append(longitude)
-                total_user_ratings.append(total_user_rating)
-                ratings.append(rating)
+        format_result_df_dict = {school: pd.DataFrame.from_dict(format_result_dict[school]) for school in format_result_dict.keys()}
+        return format_result_df_dict 
 
-            frame_dict = {'names': names, 'latitudes': latitudes, 'longitudes': longitudes, 'total_user_ratings': total_user_ratings, 'rating': ratings}
-            frame_dict_list.append(frame_dict)
-            school_count += 1
 
-        frame_list = [pd.DataFrame.from_dict(frame_dict) for frame_dict in frame_dict_list]
-        school_names = self.df['school_name'].tolist()
-
-        return {school: frame_list[i] for i, school in enumerate(school_names)}
 
     def haversine_distance(self, school_results_dict, metric):
         distance_dict = {}
