@@ -23,3 +23,8 @@ def frame_process(self, result_dict):
         frame_dict = {'names': names, 'latitudes': latitudes, 'longitudes': longitudes, 'total_user_ratings': total_user_ratings, 'rating': ratings}
         frame_dict_list.append(frame_dict)
         school_count += 1
+
+        frame_list = [pd.DataFrame.from_dict(frame_dict) for frame_dict in frame_dict_list]
+        school_names = self.df['school_name'].tolist()
+
+        return {school: frame_list[i] for i, school in enumerate(school_names)}
