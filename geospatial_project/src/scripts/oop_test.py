@@ -9,7 +9,7 @@ nr = nearest_restaurants(school_path)
 nr.view_schools()
 nr.make_coordinates()
 nr_results = nr.search_results(query='restaurants', radius=10, now=False)
-nr_results = nr.gmaps.places(page_token='1')
+
 
 
 nr_results[0]['results'][0]
