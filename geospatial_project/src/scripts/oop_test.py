@@ -27,7 +27,7 @@ while count < len(nr_results):
 
 nr_frame_dict = nr.frame_process(result_dict)
 
-nr_frame_dict['Arcadia High School'].shape
+nr_frame_dict['Arcadia High School']
 
 haversine_results = nr.haversine_distance(nr_frame_dict, 'm')
 
