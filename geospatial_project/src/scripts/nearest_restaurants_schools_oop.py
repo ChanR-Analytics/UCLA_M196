@@ -28,10 +28,20 @@ class nearest_restaurants:
         self.now = now
         self.coordinates = self.make_coordinates()
 
-        self.results = []
-        for coordinate in self.coordinates:
+
+        school_names = self.df['school_name'].tolist()
+        self.results = {}
+        self.result_list = []
+        for i, coordinate in enumerate(self.coordinates):
             self.result = self.gmaps.places(self.query, location=coordinate, radius=self.radius, open_now=self.now)
-            self.results.append(self.result)
+            self.result2 = self.gmaps.places(self.query, page_token=self.result['next_page_token'])
+            self.result3 = self.gmaps.places(self.query, page_token=self.result2['next_page_token'])
+            self.result_list.append(self.result)
+            self.result_list.append(self.result2)
+            self.result_list.append(self.result3)
+            self.results[school_names[i]] = self.result_list
+            self.result_list.clear() 
+
 
         return self.results
 
