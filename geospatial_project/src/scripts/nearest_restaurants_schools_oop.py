@@ -56,7 +56,7 @@ class nearest_restaurants:
                     if 'price_level' in result.keys():
                         price_level = result['price_level']
                     else:
-                        price_level = float('nan') 
+                        price_level = float('nan')
                     names.append(name)
                     latitudes.append(latitude)
                     longitudes.append(longitude)
@@ -85,7 +85,9 @@ class nearest_restaurants:
                 dist = haversine(school_coord_dict[school], restaurant_coordinate, unit=metric)
                 distance_list.append(dist)
             distance_dict[school] = distance_list
-        return distance_dict
+
+        haversine_df_dict = {school: pd.DataFrame.from_dict({'haversine_distance': distance_dict[school]}) for school in distance_dict.keys()}
+        return haversine_df_dict
 
     def google_distance(self, frame_dict, transporation_mode):
 
@@ -118,6 +120,6 @@ class nearest_restaurants:
                 distances.append(distance)
                 durations.append(duration)
 
-            frame_dict[school] = pd.DataFrame.from_dict({'distances': distances, f'{transporation_mode} duration': durations})
+            frame_dict[school] = pd.DataFrame.from_dict({'distance_from_school': distances, f'{transporation_mode} duration': durations})
 
         return frame_dict
