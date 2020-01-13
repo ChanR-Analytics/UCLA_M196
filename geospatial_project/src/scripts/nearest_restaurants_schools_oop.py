@@ -86,7 +86,7 @@ class nearest_restaurants:
                 distance_list.append(dist)
             distance_dict[school] = distance_list
 
-        haversine_df_dict = {school: pd.DataFrame.from_dict({'haversine_distance': distance_dict[school]}) for school in distance_dict.keys()}
+        haversine_df_dict = {school: pd.DataFrame.from_dict({f'haversine_distance ({metric})': distance_dict[school]}) for school in distance_dict.keys()}
         return haversine_df_dict
 
     def google_distance(self, frame_dict, transporation_mode):
@@ -130,4 +130,4 @@ class nearest_restaurants:
             value = pd.concat([result_dict[key], haversine_results[key], google_results[key]], axis=1)
             merged_results[key] = value
 
-        return merged_results 
+        return merged_results
