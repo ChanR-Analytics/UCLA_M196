@@ -9,7 +9,7 @@ nr = nearest_restaurants(school_path)
 nr.view_schools()
 nr.make_coordinates()
 
-nr_results = nr.search_results(query='restaurants', radius=10, now=True)
+nr_results = nr.search_results(query='restaurants', radius=10, now=False)
 # Rather than Putting Page Result 2 and 3 in the Class, add them from the instantiated object
 count = 0
 
