@@ -115,12 +115,14 @@ class nearest_restaurants:
                     distance = float('nan')
                     duration = float('nan')
                 else:
-                    distance = element['distance']['text']
-                    duration = element['duration']['text']
+                    dist_elem = element['distance']['text'].split(" ")
+                    dur_elem = element['duration']['text'].split(" ")
+                    distance = float(dist_elem[0])
+                    duration = float(dur_elem[0])
                 distances.append(distance)
                 durations.append(duration)
 
-            frame_dict[school] = pd.DataFrame.from_dict({'distance_from_school': distances, f'{transporation_mode} duration': durations})
+            frame_dict[school] = pd.DataFrame.from_dict({f'distance_from_school ({dist_elem[1]})': distances, f'{transporation_mode} duration': durations})
 
         return frame_dict
 

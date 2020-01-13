@@ -31,8 +31,8 @@ haversine_results = nr.haversine_distance(nr_frame_dict, 'km')
 
 google_results = nr.google_distance(nr_frame_dict, transporation_mode='walking')
 
-for school in google_results.keys():
-    display(google_results[school].dropna().reset_index().drop('index', axis=1))
+for school in haversine_results.keys():
+    display(haversine_results[school].dropna().reset_index().drop('index', axis=1))
 
 
 merged_df_results = nr.merge_frames(nr_frame_dict, haversine_results, google_results)
