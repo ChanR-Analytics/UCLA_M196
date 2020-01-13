@@ -27,20 +27,14 @@ while count < len(nr_results):
 
 nr_frame_dict = nr.frame_process(result_dict)
 
-nr_frame_dict['Arcadia High School']
-
-haversine_results = nr.haversine_distance(nr_frame_dict, 'm')
+haversine_results = nr.haversine_distance(nr_frame_dict, 'km')
 
 google_results = nr.google_distance(nr_frame_dict, transporation_mode='walking')
 
-for school in haversine_results.keys():
-    display(haversine_results[school].dropna().reset_index().drop('index', axis=1))
+for school in google_results.keys():
+    display(google_results[school].dropna().reset_index().drop('index', axis=1))
 
 
-merged_df_results = {}
-
-for school in result_dict.keys():
-    value = pd.concat([nr_frame_dict[school], haversine_results[school], google_results[school]], axis=1)
-    merged_df_results[school] = value
+merged_df_results = nr.merge_frames(nr_frame_dict, haversine_results, google_results)
 
 merged_df_results['Arcadia High School']
