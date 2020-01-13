@@ -123,3 +123,11 @@ class nearest_restaurants:
             frame_dict[school] = pd.DataFrame.from_dict({'distance_from_school': distances, f'{transporation_mode} duration': durations})
 
         return frame_dict
+
+        def merge_frames(self, result_dict, haversine_results, google_results):
+            merged_results = {}
+            for key in result_dict.keys():
+                value = pd.concat([result_dict[key], haversine_results[key], google_results[key]], axis=1)
+                merged_results[key] = value
+
+            return merged_results 
