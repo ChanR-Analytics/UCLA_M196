@@ -9,7 +9,7 @@ nr = nearest_restaurants(school_path)
 nr.view_schools()
 nr.make_coordinates()
 
-nr_results = nr.search_results(query='restaurants', radius=10, now=True)
+nr_results = nr.search_results(query='restaurants', radius=10, now=False)
 # Rather than Putting Page Result 2 and 3 in the Class, add them from the instantiated object
 count = 0
 
@@ -27,11 +27,14 @@ while count < len(nr_results):
 
 nr_frame_dict = nr.frame_process(result_dict)
 
-nr_frame_dict['Arcadia High School']
-
-haversine_results = nr.haversine_distance(nr_frame_dict, 'm')
+haversine_results = nr.haversine_distance(nr_frame_dict, 'km')
 
 google_results = nr.google_distance(nr_frame_dict, transporation_mode='walking')
 
-for school in google_results.keys():
-    display(google_results[school].dropna().reset_index().drop('index', axis=1))
+for school in haversine_results.keys():
+    display(haversine_results[school].dropna().reset_index().drop('index', axis=1))
+
+
+merged_df_results = nr.merge_frames(nr_frame_dict, haversine_results, google_results)
+
+merged_df_results['Arcadia High School']

@@ -56,7 +56,7 @@ class nearest_restaurants:
                     if 'price_level' in result.keys():
                         price_level = result['price_level']
                     else:
-                        price_level = float('nan') 
+                        price_level = float('nan')
                     names.append(name)
                     latitudes.append(latitude)
                     longitudes.append(longitude)
@@ -85,7 +85,9 @@ class nearest_restaurants:
                 dist = haversine(school_coord_dict[school], restaurant_coordinate, unit=metric)
                 distance_list.append(dist)
             distance_dict[school] = distance_list
-        return distance_dict
+
+        haversine_df_dict = {school: pd.DataFrame.from_dict({f'haversine_distance ({metric})': distance_dict[school]}) for school in distance_dict.keys()}
+        return haversine_df_dict
 
     def google_distance(self, frame_dict, transporation_mode):
 
@@ -113,11 +115,21 @@ class nearest_restaurants:
                     distance = float('nan')
                     duration = float('nan')
                 else:
-                    distance = element['distance']['text']
-                    duration = element['duration']['text']
+                    dist_elem = element['distance']['text'].split(" ")
+                    dur_elem = element['duration']['text'].split(" ")
+                    distance = float(dist_elem[0])
+                    duration = float(dur_elem[0])
                 distances.append(distance)
                 durations.append(duration)
 
-            frame_dict[school] = pd.DataFrame.from_dict({'distances': distances, f'{transporation_mode} duration': durations})
+            frame_dict[school] = pd.DataFrame.from_dict({f'distance_from_school ({dist_elem[1]})': distances, f'{transporation_mode} duration': durations})
 
         return frame_dict
+
+    def merge_frames(self, result_dict, haversine_results, google_results):
+        merged_results = {}
+        for key in result_dict.keys():
+            value = pd.concat([result_dict[key], haversine_results[key], google_results[key]], axis=1)
+            merged_results[key] = value
+
+        return merged_results
