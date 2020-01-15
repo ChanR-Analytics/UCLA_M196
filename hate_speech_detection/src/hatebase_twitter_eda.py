@@ -23,3 +23,12 @@ new_class_vals
 
 new_class_val_props = {key : f"{round(new_class_vals[key] / sum([i for i in new_class_vals.values()]) , 2)*100}%" for key in new_class_vals.keys()}
 new_class_val_props
+
+df.shape
+
+24802 - 24783
+
+tweet_one = df['tweet'][0]
+tweet_one
+processed_tweet_one = tweet_one[tweet_one.index(":") + 1:]
+processed_tweet_one.split(" ")
