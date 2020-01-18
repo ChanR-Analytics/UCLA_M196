@@ -4,8 +4,12 @@ from os import getcwd, listdir
 import nltk
 from nltk.stem.porter import *
 import re
+from sklearn.feature_extraction.text import TfidfVectorizer
 from textstat.textstat import *
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer as VS
+
+
+
 
 data_path = getcwd() + "/hate_speech_detection/data/HatebaseTwitter"
 listdir(data_path)
