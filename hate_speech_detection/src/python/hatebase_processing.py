@@ -16,9 +16,9 @@ listdir(data_path)
 df = pd.read_csv(f"{data_path}/{listdir(data_path)[0]}")
 df.head()
 
-# To Install the Stopwords with NLTK:
-nltk.download('stopwords')
-nltk.download('averaged_perceptron_tagger')
+# # To Install the Stopwords with NLTK:
+# nltk.download('stopwords')
+# nltk.download('averaged_perceptron_tagger')
 
 
 stopwords = nltk.corpus.stopwords.words('english')
@@ -68,21 +68,65 @@ def basic_tokenize(tweet):
 
 basic_tokenize(tweets[0])
 
-def get_pos_tags(tweets):
-    """Takes a list of strings (tweets) and
-    returns a list of strings of (POS tags).
-    """
-    tweet_tags = []
-    for t in tweets:
-        tokens = basic_tokenize(preprocess(t))
-        tags = nltk.pos_tag(tokens)
-        tag_list = [x[1] for x in tags]
-        #for i in range(0, len(tokens)):
-        tag_str = " ".join(tag_list)
-        tweet_tags.append(tag_str)
-    return tweet_tags
 
-tweet_pos = get_pos_tags(tweets)
+vectorizer = TfidfVectorizer(
+    tokenizer = tokenize,
+    preprocessor = preprocess,
+    ngram_range = (1,3),
+    stop_words = stopwords,
+    use_idf = True,
+    smooth_idf = False,
+    norm = None,
+    decode_error = 'replace',
+    max_features = 10000,
+    min_df = 5,
+    max_df = 0.75
+)
+
+
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+# Constructing the TF IDF Matrix and Getting the Relevant Scores
+tfidf = vectorizer.fit_transform(tweets).toarray()
+vocab = {v:i for i,v in enumerate(vectorizer.get_feature_names())}
+idf_vals = vectorizer.idf_
+idf_dict = {i: idf_vals[i] for i in vocab.values()}
+
+# Getting POS Tags for Tweets and Saving as a String
+tweet_tags = []
+for t in tweets:
+    tokens = basic_tokenize(preprocess(t))
+    tags = nltk.pos_tag(tokens)
+    tag_list = [x[1] for x in tags]
+    tag_str = " ".join(tag_list)
+    tweet_tags.append(tag_str)
+
+# Use TF IDF vectorizer to get a token matrix for the POS tags
+pos_vectorizer = TfidfVectorizer(
+    tokenizer=None,
+    lowercase=None,
+    preprocessor=None,
+    ngram_range = (1,3),
+    stop_words=None,
+    use_idf=False,
+    smooth_idf=False,
+    norm=None,
+    decode_error='replace',
+    max_features=5000,
+    min_df=5,
+    max_df=0.75,
+)
+
+# Construct POS TF Matrix and Get Vocabulary Dictionary
+pos = pos_vectorizer.fit_transform(pd.Series(tweet_tags)).toarray()
+pos_vocab = {v:i for i,v in enumerate(pos_vectorizer.get_feature_names())}
+
+
+pos_vocab.keys()
+
+# Getting the Other Features
+sentiment_analyzer = VS()
 
 def count_twitter_objs(text_string):
     """
@@ -137,10 +181,21 @@ def other_features_(tweet):
     #features = pandas.DataFrame(features)
     return features
 
-def get_oth_features(tweets):
+def get_feature_array(tweets):
     """Takes a list of tweets, generates features for
     each tweet, and returns a numpy array of tweet x features"""
     feats=[]
     for t in tweets:
         feats.append(other_features_(t))
     return np.array(feats)
+
+other_feature_names = ["FKRA", "FRE","num_syllables", "avg_syl_per_word", "num_chars", "num_chars_total", \
+                        "num_terms", "num_words", "num_unique_words", "vader neg","vader pos","vader neu", \
+                        "vader compound", "num_hashtags", "num_mentions", "num_urls", "is_retweet"]
+
+feats = get_feature_array(tweets)
+
+# Join Features Together
+M = np.concatenate([tfidf, pos, feats], axis=1)
+
+M.shape
