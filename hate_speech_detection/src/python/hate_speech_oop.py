@@ -7,15 +7,11 @@ import re
 import nltk
 from nltk.stem.porter import *
 from os import getcwd, listdir
-from jupyterthemes import jtplot
 from sklearn.feature_extraction.text import TfidfVectorizer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer as VS
 from textstat.textstat import *
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
-sns.set()
-jtplot.style(theme="monokai")
 
 class HatebaseTwitter():
     def __init__(self, data_path):
@@ -27,7 +23,7 @@ class HatebaseTwitter():
         annot_count = self.df['count'].value_counts().to_dict()
 
         ## Visualizing the Annotator Count
-        plt.figure(figsize=(10,10))
-        sns.barplot(annot_count.keys(), annot_count.values())
+        plt.figure(figsize=(12,12))
+        plt.bar(list(annot_count.keys()), list(annot_count.values()))
         plt.xlabel('Number of CrowdFlower Annotators', size=14)
         plt.ylabel('Number of Tweets Annotated', size=14)
