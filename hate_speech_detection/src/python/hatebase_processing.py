@@ -199,3 +199,14 @@ feats = get_feature_array(tweets)
 M = np.concatenate([tfidf, pos, feats], axis=1)
 
 M.shape
+
+# Getting a List of Variable Names
+variables = ['']*len(vocab)
+for k,v in vocab.items():
+    variables[v] = k
+
+pos_variables = ['']*len(pos_vocab)
+for k,v in pos_vocab.items():
+    pos_variables[v] = k
+
+feature_names = variables + pos_variables + other_feature_names
