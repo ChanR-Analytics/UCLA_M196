@@ -29,5 +29,11 @@ class HatebaseTwitter():
         plt.ylabel('Number of Tweets Annotated', size=14)
 
         # Visualizing the Proportion of Tweet Classification Labels and Class Imbalance
-        plt.figure(figsize=(12,12))
-        self.df['class'].plot_pie() 
+        labels = ['Hateful', 'Offensive', 'Neither']
+        class_vals = self.df['class'].value_counts().to_dict()
+        print(class_vals)
+
+        fig, ax = plt.subplots()
+        ax.pie(class_vals.values(), labels=labels, autopct='%1.1f%%')
+        ax.axis('equal')
+        plt.show() 
