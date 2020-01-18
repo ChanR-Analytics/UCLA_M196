@@ -27,3 +27,7 @@ class HatebaseTwitter():
         plt.bar(list(annot_count.keys()), list(annot_count.values()))
         plt.xlabel('Number of CrowdFlower Annotators', size=14)
         plt.ylabel('Number of Tweets Annotated', size=14)
+
+        # Visualizing the Proportion of Tweet Classification Labels and Class Imbalance
+        plt.figure(figsize=(12,12))
+        self.df['class'].plot_pie() 
