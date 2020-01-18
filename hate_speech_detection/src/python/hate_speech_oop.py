@@ -9,5 +9,11 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 sns.set()
 jtplot.style(theme="monokai")
 
-class HatebaseTwitter_Exploration():
+class HatebaseTwitter():
     def __init__(self, data_path):
+        # Reading the Data Frame from the Hatebase Twitter CSV File
+        self.df = pd.read_csv(f"{data_path}/{listdir(data_path)[0]}")
+
+    def eda(self):
+        # Seeing the Number of CrowdFlower Annotators that Decided On a Tweet's Label
+        
