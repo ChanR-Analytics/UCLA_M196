@@ -13,7 +13,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer as VS
 
 data_path = getcwd() + "/hate_speech_detection/data/HatebaseTwitter"
 listdir(data_path)
-df = pd.read_csv(f"{data_path}/{listdir(data_path)[1]}")
+df = pd.read_csv(f"{data_path}/{listdir(data_path)[0]}")
 df.head()
 
 # To Install the Stopwords with NLTK:
