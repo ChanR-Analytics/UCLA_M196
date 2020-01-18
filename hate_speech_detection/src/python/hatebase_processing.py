@@ -16,6 +16,8 @@ listdir(data_path)
 df = pd.read_csv(f"{data_path}/{listdir(data_path)[0]}")
 df.head()
 
+annot_dict = df['count'].value_counts().to_dict()
+annot_dict[3]
 # # To Install the Stopwords with NLTK:
 # nltk.download('stopwords')
 # nltk.download('averaged_perceptron_tagger')
@@ -82,7 +84,6 @@ vectorizer = TfidfVectorizer(
     min_df = 5,
     max_df = 0.75
 )
-
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)

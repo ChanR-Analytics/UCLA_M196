@@ -20,6 +20,8 @@ stopwords.extend(other_exclusions)
 
 stemmer = PorterStemmer()
 
+sentiment_analyzer = VS()
+
 def preprocess(text_string):
     """
     Accepts a text string and replaces:
@@ -81,6 +83,31 @@ def other_features_(tweet):
     as well as Twitter specific features.
     This is modified to only include those features in the final
     model."""
+
+    sentiment = sentiment_analyzer.polarity_scores(tweet)
+
+    words = preprocess(tweet) #Get text only
+
+    syllables = textstat.syllable_count(words) #count syllables in words
+    num_chars = sum(len(w) for w in words) #num chars in words
+    num_chars_total = len(tweet)
+    num_terms = len(tweet.split())
+    num_words = len(words.split())
+    avg_syl = round(float((syllables+0.001))/float(num_words+0.001),4)
+    num_unique_terms = len(set(words.split()))
+
+    ###Modified FK grade, where avg words per sentence is just num words/1
+    FKRA = round(float(0.39 * float(num_words)/1.0) + float(11.8 * avg_syl) - 15.59,1)
+    ##Modified FRE score, where sentence fixed to 1
+    FRE = round(206.835 - 1.015*(float(num_words)/1.0) - (84.6*float(avg_syl)),2)
+
+    twitter_objs = count_twitter_objs(tweet) #Count #, @, and http://
+    features = [FKRA, FRE, syllables, num_chars, num_chars_total, num_terms, num_words,
+                num_unique_terms, sentiment['compound'],
+                twitter_objs[2], twitter_objs[1],]
+    #features = pandas.DataFrame(features)
+    return features
+
 
 def get_feature_array(tweets):
     """Takes a list of tweets, generates features for
@@ -169,13 +196,11 @@ class HatebaseTwitter():
         pos_vocab = {v:i for i,v in enumerate(pos_vectorizer.get_feature_names())}
 
         # Getting the Other Features
-        sentiment_analyzer = VS()
-
         other_feature_names = ["FKRA", "FRE","num_syllables", "avg_syl_per_word", "num_chars", "num_chars_total", \
                                 "num_terms", "num_words", "num_unique_words", "vader neg","vader pos","vader neu", \
                                 "vader compound", "num_hashtags", "num_mentions", "num_urls", "is_retweet"]
 
-        features = get_feature_array(tweets)
+        feats = get_feature_array(tweets)
 
         # Join Features Together
         M = np.concatenate([tfidf, pos, feats], axis=1)
