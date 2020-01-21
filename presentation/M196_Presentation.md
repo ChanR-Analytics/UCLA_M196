@@ -4,7 +4,7 @@
 
 ## Intro to Data Science Slide
 
-## Bringing the Data into Google Colab 
+## Bringing the Data into Google Colab
 
 ## Introductory Python Slides
 
