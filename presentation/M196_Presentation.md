@@ -4,6 +4,8 @@
 
 ## Intro to Data Science Slide
 
+## Bringing the Data into Google Colab 
+
 ## Introductory Python Slides
 
 - Variables and Data
@@ -18,4 +20,4 @@
 
 ## Project 3: Geospatial AI Solution for Mental Health
 
-## Concluding Thoughts 
+## Concluding Thoughts
