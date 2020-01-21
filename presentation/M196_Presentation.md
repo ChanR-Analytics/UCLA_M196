@@ -16,4 +16,6 @@
 
 ## Project 2: Hate Speech Detection with Natural Language Processing and Machine Learning
 
-## Project 3: Geospatial AI Solution for Mental Health 
+## Project 3: Geospatial AI Solution for Mental Health
+
+## Concluding Thoughts 
