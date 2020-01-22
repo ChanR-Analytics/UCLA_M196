@@ -13,6 +13,7 @@
 - Iterative Programming
 - Functions
 - Object Oriented Programming with Classes
+- Modules 
 
 ## Project 1: Geospatial Exploration with School Locations
 
