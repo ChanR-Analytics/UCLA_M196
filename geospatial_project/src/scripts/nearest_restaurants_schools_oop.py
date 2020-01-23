@@ -11,7 +11,7 @@ class nearest_restaurants:
         self.data_path = data_path
         self.key = "AIzaSyBHWiHNgsyEL8IzkG42rcZYmqzjIXXHswE"
         self.gmaps = googlemaps.Client(key = self.key)
-        self.df = pd.read_csv(f"{self.data_path}") 
+        self.df = pd.read_csv(f"{self.data_path}")
 
     def view_schools(self):
         return self.df
@@ -122,7 +122,7 @@ class nearest_restaurants:
                 distances.append(distance)
                 durations.append(duration)
 
-            frame_dict[school] = pd.DataFrame.from_dict({f'distance_from_school ({dist_elem[1]})': distances, f'{transporation_mode} duration': durations})
+            frame_dict[school] = pd.DataFrame.from_dict({f'distance_from_school ({dist_elem[1]})': distances, f'{transporation_mode} duration ({dur_elem[1]})': durations})
 
         return frame_dict
 
