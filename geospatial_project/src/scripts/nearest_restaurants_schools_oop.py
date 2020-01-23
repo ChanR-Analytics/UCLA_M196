@@ -11,7 +11,7 @@ class nearest_restaurants:
         self.data_path = data_path
         self.key = "AIzaSyBHWiHNgsyEL8IzkG42rcZYmqzjIXXHswE"
         self.gmaps = googlemaps.Client(key = self.key)
-        self.df = pd.read_csv(f"{self.data_path}/{listdir(data_path)[0]}")
+        self.df = pd.read_csv(f"{self.data_path}") 
 
     def view_schools(self):
         return self.df
