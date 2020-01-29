@@ -253,6 +253,8 @@ class HatebaseTwitter():
                 model = RandomForestClassifier(n_estimators=500, bootstrap=True, max_depth=5)
             elif classifier = 'xgb':
                 model = XGBClassifier(n_estimators=500, bootstrap=True, max_depth=5, reg_lamba=0.4)
+            else:
+                raise TypeError("Choose a proper classifier.") 
 
             model.fit(X_train, Y_train)
 
@@ -274,4 +276,3 @@ class HatebaseTwitter():
             plot_roc(Y_test, Y_prob)
 
             return model
-        
