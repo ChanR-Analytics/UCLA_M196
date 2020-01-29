@@ -8,6 +8,14 @@ import nltk
 from nltk.stem.porter import *
 from os import getcwd, listdir
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import SelectFromModel, RFE
+from sklearn.svm import LinearSVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score, classification_report, matthews_corrcoef
+from scikitplot.metrics import plot_confusion_matrix, plot_roc
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer as VS
 from textstat.textstat import *
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -217,3 +225,13 @@ class HatebaseTwitter():
         self.feature_names = variables + pos_variables + other_feature_names
 
         return M
+
+        def l1_dim_reduce(self, M):
+            df = self.df
+            y = df['class']
+            X = pd.DataFrame(M)
+            dim_reduce = SelectFromModel(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'))
+            X_ = dim_reduce.fit_transform(X, y)
+            return X_
+
+        def rfe_dim_reduce(self, M):
