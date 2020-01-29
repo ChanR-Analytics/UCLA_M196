@@ -226,53 +226,55 @@ class HatebaseTwitter():
 
         return M
 
-        def multi_l1_dim_reduce(self, M):
-            df = self.df
-            y = df['class']
-            X = pd.DataFrame(M)
-            dim_reduce = SelectFromModel(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'))
-            X_ = dim_reduce.fit_transform(X, y)
-            return X_
+    def multi_l1_dim_reduce(self, M):
+        df = self.df
+        y = df['class']
+        X = pd.DataFrame(M)
+        dim_reduce = SelectFromModel(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'))
+        X_ = dim_reduce.fit_transform(X, y)
+        return X_
 
-        def multi_rfe_dim_reduce(self, M, n):
-            df = self.df
-            y = df['class']
-            X = pd.DataFrame(M)
-            dim_reduce = RFE(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'), step=n)
-            X_ = dim_reduce.fit_transform(X, y)
-            return X_
+    def multi_rfe_dim_reduce(self, M, n):
+        df = self.df
+        y = df['class']
+        X = pd.DataFrame(M)
+        dim_reduce = RFE(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'), step=n)
+        X_ = dim_reduce.fit_transform(X, y)
+        return X_
 
-        def multi_classify(self, X, y, classifier, test_prop):
-            X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=test_prop, stratify=y)
+    def multi_classify(self, X, y, classifier, test_prop):
+        X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=test_prop, stratify=y)
 
-            if classifier = 'lr':
-                model = LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l2')
-            elif classifier = 'svc':
-                model = LinearSVC(C=0.004, penalty='l2')
-            elif classifier = 'rf':
-                model = RandomForestClassifier(n_estimators=500, bootstrap=True, max_depth=5)
-            elif classifier = 'xgb':
-                model = XGBClassifier(n_estimators=500, bootstrap=True, max_depth=5, reg_lamba=0.4)
-            else:
-                raise TypeError("Choose a proper classifier.") 
+        if classifier == 'lr':
+            model = LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l2')
+        elif classifier == 'svc':
+            model = LinearSVC(C=0.004, penalty='l2')
+        elif classifier == 'rf':
+            model = RandomForestClassifier(n_estimators=500, bootstrap=True, max_depth=5)
+        elif classifier == 'xgb':
+            model = XGBClassifier(n_estimators=500, bootstrap=True, max_depth=5, reg_lamba=0.4)
+        else:
+            raise TypeError("Choose a proper classifier.")
 
-            model.fit(X_train, Y_train)
+        model.fit(X_train, Y_train)
 
-            Y_pred = model.predict(X_test)
+        Y_pred = model.predict(X_test)
+        if classifier != 'svc':
             Y_prob = model.predict_proba(X_test)
 
-            # Accuracy Percentage
-            print(f"Accuracy is {round(accuracy_score(Y_test, Y_pred), 2)*100}%")
+        # Accuracy Percentage
+        print(f"Accuracy is {round(accuracy_score(Y_test, Y_pred), 2)*100}%")
 
-            # Classification Report
-            print(classification_report(Y_pred, Y_test))
+        # Classification Report
+        print(classification_report(Y_pred, Y_test))
 
-            # Matthew's Correlation Coefficient
-            print(f"Matthew's Correlation Coefficient is {matthews_corrcoef(Y_test, Y_pred)}")
+        # Matthew's Correlation Coefficient
+        print(f"Matthew's Correlation Coefficient is {matthews_corrcoef(Y_test, Y_pred)}")
 
-            # Plots of Confusion Matrix and ROC Curve
-            plt.figure(figsize=(10,10))
-            plot_confusion_matrix(Y_test, Y_pred)
+        # Plots of Confusion Matrix and ROC Curve
+        plt.figure(figsize=(10,10))
+        plot_confusion_matrix(Y_test, Y_pred)
+        if classifier != 'svc':
             plot_roc(Y_test, Y_prob)
 
-            return model
+        return model
