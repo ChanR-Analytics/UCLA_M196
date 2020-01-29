@@ -235,3 +235,9 @@ class HatebaseTwitter():
             return X_
 
         def rfe_dim_reduce(self, M):
+            df = self.df
+            y = df['class']
+            X = pd.DataFrame(M)
+            dim_reduce = RFE(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'))
+            X_ = dim_reduce.fit_transform(X, y)
+            return X_ 
