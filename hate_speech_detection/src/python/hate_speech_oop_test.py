@@ -16,6 +16,5 @@ hb.eda()
 features = hb.features()
 
 X_ = hb.multi_l1_dim_reduce(features)
-X_ = hb.multi_rfe_dim_reduce(X_, 10)
-X_.shape 
-classifier = hb.multi_classify(X_, hb.df['class'], 'xgb', 0.15)
+X_.shape
+multi_classifier = hb.classify(X_, 'binary', 'xgb', 0.15, res=True, res_method='up')
