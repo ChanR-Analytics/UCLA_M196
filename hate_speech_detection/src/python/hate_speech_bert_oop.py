@@ -329,7 +329,7 @@ class HatebaseTwitter():
             self.train_y[np.where(self.train_y == 1)] = 0
             self.train_y[np.where(self.train_y == 2)] = 1
             self.test_y[np.where(self.test_y == 1)] = 0
-            self.test_y[np.where(self.train_y == 2)] = 1
+            self.test_y[np.where(self.test_y == 2)] = 1
 
         #log_dir = ".log/movie_reviews/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%s")
         #tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir)
