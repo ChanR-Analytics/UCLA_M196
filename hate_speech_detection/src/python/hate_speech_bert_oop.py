@@ -355,8 +355,8 @@ class HatebaseTwitter():
                   ])
 
         self.model.save_weights('./movie_reviews.h5', overwrite=True)
-
-        Y_pred = self.model.predict(self.test_x)
+        Y_pred_probabilities = self.model.predict(self.test_x)
+        Y_pred = np.argmax(Y_pred_probabilities,axis=-1)
 
         # Accuracy Percentage
         print(f"Accuracy is {round(accuracy_score(self.test_y, Y_pred), 2)*100}%")
