@@ -1,8 +1,7 @@
 jupyterthemes
 googlemaps
 haversine
-geoviews
 imblearn
 vaderSentiment
 textstat
-xgboost 
+xgboost
