@@ -12,7 +12,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 import bert
 from bert import BertModelLayer
+from tqdm import tqdm
+import tensorflow as tf
+from tensorflow import keras
 from bert.loader import StockBertConfig, map_stock_config_to_params, load_stock_weights
+FullTokenizer = bert.bert_tokenization.FullTokenizer
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
@@ -128,9 +132,11 @@ def preprocess(text_string):
 
 
 class HatebaseTwitter():
-    def __init__(self, data_path):
+    def __init__(self, data_path,data_column="tweet", label_column='class'):
         # Reading the Data Frame from the Hatebase Twitter CSV File
         self.df = pd.read_csv(f"{data_path}/{listdir(data_path)[0]}")
+        self.data_column = data_column
+        self.label_column = label_column
         bert_ckpt_dir = "gs://bert_models/2018_10_18/uncased_L-12_H-768_A-12/"
         bert_ckpt_file = bert_ckpt_dir + "bert_model.ckpt"
         bert_config_file = bert_ckpt_dir + "bert_config.json"
@@ -152,6 +158,138 @@ class HatebaseTwitter():
         self._bert_ckpt_file = os.path.join(bert_ckpt_dir, "bert_model.ckpt")
         self._bert_config_file = os.path.join(bert_ckpt_dir, "bert_config.json")
 
+    def bert_tokenize(self, train_split=0.3, max_seq_len=1024, verbose=False):
+        self._tokenizer = FullTokenizer(vocab_file=os.path.join(self._bert_ckpt_dir, "vocab.txt"))
+        #self.sample_size = sample_size
+        self.max_seq_len = 0
+        self.df[self.data_column] = self.df[self.data_column].apply(lambda x: preprocess(x))
+        X_train, X_test, y_train, y_test = train_test_split(self.df[self.data_column], self.df[self.label_column], test_size=0.3,
+                                                            random_state=100, stratify=self.df[self.label_column])
+        train = pd.concat([X_train, y_train], axis=1).reset_index().drop('index', axis=1)
+        test = pd.concat([X_test, y_test], axis=1).reset_index().drop('index', axis=1)
+        if verbose:
+            print(f"Train data shape: {train.shape}")
+            print(f"Train data shape: {test.shape}")
+        train, test = map(lambda df: df.reindex(df[self.data_column].str.len().sort_values().index),
+                          [train, test])
+
+        ((self.train_x, self.train_y),
+         (self.test_x, self.test_y)) = map(self._prepare, [train, test])
+
+        if verbose: print("max seq_len", self.max_seq_len)
+        self.max_seq_len = min(self.max_seq_len, max_seq_len)
+        ((self.train_x, self.train_x_token_types),
+         (self.test_x, self.test_x_token_types)) = map(self._pad,
+                                                       [self.train_x, self.test_x])
+
+    def _prepare(self,df):
+            x, y = [], []
+            with tqdm(total=df.shape[0], unit_scale=True) as pbar:
+                for ndx, row in df.iterrows():
+                    text, label = row[self.data_column], row[self.label_column]
+                    tokens = self._tokenizer.tokenize(text)
+                    tokens = ["[CLS]"] + tokens + ["[SEP]"]
+                    token_ids = self._tokenizer.convert_tokens_to_ids(tokens)
+                    self.max_seq_len = max(self.max_seq_len, len(token_ids))
+                    x.append(token_ids)
+                    y.append(int(label))
+                    pbar.update()
+            return np.array(x), np.array(y)
+
+    def _pad(self, ids):
+        x, t = [], []
+        token_type_ids = [0] * self.max_seq_len
+        for input_ids in ids:
+            input_ids = input_ids[:min(len(input_ids), self.max_seq_len - 2)]
+            input_ids = input_ids + [0] * (self.max_seq_len - len(input_ids))
+            x.append(np.array(input_ids))
+            t.append(token_type_ids)
+        return np.array(x), np.array(t)
+
+    def create_learning_rate_scheduler(self, max_learn_rate=5e-5,
+                                       end_learn_rate=1e-7,
+                                       warmup_epoch_count=10,
+                                       total_epoch_count=90):
+
+        def lr_scheduler(epoch):
+            if epoch < warmup_epoch_count:
+                res = (max_learn_rate / warmup_epoch_count) * (epoch + 1)
+            else:
+                res = max_learn_rate * math.exp(
+                    math.log(end_learn_rate / max_learn_rate) * (epoch - warmup_epoch_count + 1) / (
+                                total_epoch_count - warmup_epoch_count + 1))
+            return float(res)
+
+        learning_rate_scheduler = tf.keras.callbacks.LearningRateScheduler(lr_scheduler, verbose=1)
+
+        return learning_rate_scheduler
+
+    def flatten_layers(self,root_layer):
+        if isinstance(root_layer, keras.layers.Layer):
+            yield root_layer
+        for layer in root_layer._layers:
+            for sub_layer in flatten_layers(layer):
+                yield sub_layer
+
+    def freeze_bert_layers(self,l_bert):
+        """
+        Freezes all but LayerNorm and adapter layers - see arXiv:1902.00751.
+        """
+        for layer in self.flatten_layers(l_bert):
+            if layer.name in ["LayerNorm", "adapter-down", "adapter-up"]:
+                layer.trainable = True
+            elif len(layer._layers) == 0:
+                layer.trainable = False
+            l_bert.embeddings_layer.trainable = False
+
+    def create_model(self, adapter_size=64):
+        """Creates a classification model."""
+
+        # adapter_size = 64  # see - arXiv:1902.00751
+
+        # create the bert layer
+        with tf.io.gfile.GFile(self._bert_config_file, "r") as reader:
+            bc = StockBertConfig.from_json_string(reader.read())
+            bert_params = map_stock_config_to_params(bc)
+            bert_params.adapter_size = adapter_size
+            bert = BertModelLayer.from_params(bert_params, name="bert")
+
+        input_ids = keras.layers.Input(shape=(self.max_seq_len,), dtype='int32', name="input_ids")
+        # token_type_ids = keras.layers.Input(shape=(max_seq_len,), dtype='int32', name="token_type_ids")
+        # output         = bert([input_ids, token_type_ids])
+        output = bert(input_ids)
+
+        print("bert shape", output.shape)
+        cls_out = keras.layers.Lambda(lambda seq: seq[:, 0, :])(output)
+        cls_out = keras.layers.Dropout(0.3)(cls_out)
+        logits = keras.layers.Dense(units=768, activation="relu")(cls_out)
+        # logits = keras.layers.Dropout(0.3)(logits)
+        # logits = keras.layers.Dense(units=256, activation="relu")(logits)
+        logits = keras.layers.Dropout(0.4)(logits)
+        logits = keras.layers.Dense(units=2, activation="softmax")(logits)
+
+        # model = keras.Model(inputs=[input_ids , token_type_ids], outputs=logits)
+        # model.build(input_shape=[(None, max_seq_len), (None, max_seq_len)])
+        model = keras.Model(inputs=input_ids, outputs=logits)
+        model.build(input_shape=(None, self.max_seq_len))
+
+        # load the pre-trained model weights
+        load_stock_weights(bert, self._bert_ckpt_file)
+
+        # freeze weights if adapter-BERT is used
+        if adapter_size is not None:
+            self.freeze_bert_layers(bert)
+
+        model.compile(optimizer=keras.optimizers.Adam(),
+                      loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                      # loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                      metrics=[tf.keras.metrics.SparseCategoricalAccuracy(name="acc")]
+                      # metrics=[tf.keras.metrics.BinaryAccuracy(name="acc")]
+                      )
+
+        model.summary()
+        self.model = model
+        #return model
 
     def eda(self):
         # Seeing the Number of CrowdFlower Annotators that Decided On a Tweet's Label
