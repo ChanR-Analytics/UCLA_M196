@@ -228,7 +228,7 @@ class HatebaseTwitter():
 
         return M
 
-    def multi_l1_dim_reduce(self, M):
+    def l1_dim_reduce(self, M):
         df = self.df
         y = df['class']
         X = pd.DataFrame(M)
@@ -236,11 +236,25 @@ class HatebaseTwitter():
         X_ = dim_reduce.fit_transform(X, y)
         return X_
 
-    def multi_rfe_dim_reduce(self, M, n):
+    def rfe_dim_reduce(self, M, classifier, n):
         df = self.df
         y = df['class']
         X = pd.DataFrame(M)
-        dim_reduce = RFE(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'), step=n)
+        if classifier == 'lr':
+            model = LogisticRegression()
+        elif classifier == 'rf':
+            model = RandomForestClassifier()
+        elif classifier == 'ada':
+            model = AdaBoostClassifier()
+        elif classifier == 'xgb':
+            model = XGBClassifier()
+        elif classifier == 'svc':
+            model = LinearSVC()
+        elif classifier == 'davidson':
+            model = LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1')
+        else:
+            raise TypeError("Please use a proper classifier.") 
+        dim_reduce = RFE(model, step=n)
         X_ = dim_reduce.fit_transform(X, y)
         return X_
 
