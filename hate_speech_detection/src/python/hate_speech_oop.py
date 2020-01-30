@@ -12,10 +12,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import SelectFromModel, RFE
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from xgboost import XGBClassifier
+from imblearn.under_sampling import NearMiss
+from imblearn.over_sampling import ADASYN
 from sklearn.metrics import accuracy_score, classification_report, matthews_corrcoef
-from scikitplot.metrics import plot_confusion_matrix, plot_roc
+from scikitplot.metrics import plot_confusion_matrix
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer as VS
 from textstat.textstat import *
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -242,8 +244,26 @@ class HatebaseTwitter():
         X_ = dim_reduce.fit_transform(X, y)
         return X_
 
-    def multi_classify(self, X, y, classifier, test_prop):
+    def classify(self, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
+
+        if type == 'binary':
+            y = self.df['class'].replace(0, 1, inplace=True)
+        elif type == 'multi':
+            y = self.df['class']
+        else:
+            raise TypeError("Choose a proper type of classification")
+
         X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=test_prop, stratify=y)
+
+        if res == True:
+            if res_method == 'down':
+                nm = NearMiss()
+                X_res, Y_res = nm.fit_resample(X_train, Y_train)
+            elif res_method == 'up':
+                sm = ADASYN()
+                X_res, Y_res = sm.fit_resample(X_train, Y_train)
+            else:
+                raise TypeError("Resampling method not provided. Please use 'up' for oversampling or 'down' for undersampling.")
 
         if classifier == 'lr':
             model = LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l2')
@@ -253,14 +273,17 @@ class HatebaseTwitter():
             model = RandomForestClassifier(n_estimators=500, bootstrap=True, max_depth=5)
         elif classifier == 'xgb':
             model = XGBClassifier(n_estimators=500, bootstrap=True, max_depth=5, reg_lamba=0.4)
+        elif classifier == 'ada':
+            model = AdaBoostClassifier(n_estimators=500, bootstrap=True, learning_rate=0.005)
         else:
             raise TypeError("Choose a proper classifier.")
 
-        model.fit(X_train, Y_train)
+        if res == True:
+            model.fit(X_res, Y_res)
+        else:
+            model.fit(X_train, Y_train)
 
         Y_pred = model.predict(X_test)
-        if classifier != 'svc':
-            Y_prob = model.predict_proba(X_test)
 
         # Accuracy Percentage
         print(f"Accuracy is {round(accuracy_score(Y_test, Y_pred), 2)*100}%")
@@ -274,7 +297,5 @@ class HatebaseTwitter():
         # Plots of Confusion Matrix and ROC Curve
         plt.figure(figsize=(10,10))
         plot_confusion_matrix(Y_test, Y_pred)
-        if classifier != 'svc':
-            plot_roc(Y_test, Y_prob)
 
         return model
