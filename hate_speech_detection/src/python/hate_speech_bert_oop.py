@@ -5,6 +5,7 @@ import warnings
 import os
 import re
 import nltk
+import math
 from nltk.stem.porter import *
 from os import getcwd, listdir
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -17,6 +18,8 @@ import tensorflow as tf
 from tensorflow import keras
 from bert.loader import StockBertConfig, map_stock_config_to_params, load_stock_weights
 from imblearn.keras import BalancedBatchGenerator,balanced_batch_generator
+from sklearn.metrics import accuracy_score, classification_report, matthews_corrcoef
+from scikitplot.metrics import plot_confusion_matrix
 from imblearn.under_sampling import NearMiss
 FullTokenizer = bert.bert_tokenization.FullTokenizer
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -245,11 +248,16 @@ class HatebaseTwitter():
                 layer.trainable = False
             l_bert.embeddings_layer.trainable = False
 
-    def create_model(self, adapter_size=None):
+    def create_model(self, type: str, adapter_size=None):
         """Creates a classification model."""
-
+        self.type = type
         # adapter_size = 64  # see - arXiv:1902.00751
-
+        if type == 'binary':
+            class_count = 2
+        elif type == 'multi':
+            class_count = 3
+        else:
+            raise TypeError("Choose a proper type of classification")
         # create the bert layer
         with tf.io.gfile.GFile(self._bert_config_file, "r") as reader:
             bc = StockBertConfig.from_json_string(reader.read())
@@ -269,7 +277,7 @@ class HatebaseTwitter():
         # logits = keras.layers.Dropout(0.3)(logits)
         # logits = keras.layers.Dense(units=256, activation="relu")(logits)
         logits = keras.layers.Dropout(0.4)(logits)
-        logits = keras.layers.Dense(units=2, activation="softmax")(logits)
+        logits = keras.layers.Dense(units=class_count, activation="softmax")(logits)
 
         # model = keras.Model(inputs=[input_ids , token_type_ids], outputs=logits)
         # model.build(input_shape=[(None, max_seq_len), (None, max_seq_len)])
@@ -317,10 +325,11 @@ class HatebaseTwitter():
 
     def classify(self):#, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
 
-        self.train_y[np.where(self.train_y == 1)] = 0
-        self.train_y[np.where(self.train_y == 2)] = 1
-        self.test_y[np.where(self.test_y == 1)] = 0
-        self.test_y[np.where(self.train_y == 2)] = 1
+        if self.type == "binary":
+            self.train_y[np.where(self.train_y == 1)] = 0
+            self.train_y[np.where(self.train_y == 2)] = 1
+            self.test_y[np.where(self.test_y == 1)] = 0
+            self.test_y[np.where(self.train_y == 2)] = 1
 
         #log_dir = ".log/movie_reviews/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%s")
         #tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir)
@@ -347,19 +356,19 @@ class HatebaseTwitter():
 
         self.model.save_weights('./movie_reviews.h5', overwrite=True)
 
-        # Y_pred = model.predict(X_test)
-        #
-        # # Accuracy Percentage
-        # print(f"Accuracy is {round(accuracy_score(Y_test, Y_pred), 2)*100}%")
-        #
-        # # Classification Report
-        # print(classification_report(Y_pred, Y_test))
-        #
-        # # Matthew's Correlation Coefficient
-        # print(f"Matthew's Correlation Coefficient is {matthews_corrcoef(Y_test, Y_pred)}")
-        #
-        # # Plots of Confusion Matrix and ROC Curve
-        # plot_confusion_matrix(Y_test, Y_pred, figsize=(10,10))
+        Y_pred = self.model.predict(self.test_x)
+
+        # Accuracy Percentage
+        print(f"Accuracy is {round(accuracy_score(self.test_y, Y_pred), 2)*100}%")
+
+        # Classification Report
+        print(classification_report(Y_pred, self.test_y))
+
+        # Matthew's Correlation Coefficient
+        print(f"Matthew's Correlation Coefficient is {matthews_corrcoef(self.test_y, Y_pred)}")
+
+        # Plots of Confusion Matrix and ROC Curve
+        plot_confusion_matrix(self.test_y, Y_pred, figsize=(10, 10))
         #
         # return model
 
