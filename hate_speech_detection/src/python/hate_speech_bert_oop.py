@@ -146,6 +146,7 @@ class HatebaseTwitter():
         # os.system()
         # !mkdir -p .model .model/$bert_model_name
         #
+        os.system(f"mkdir -p .model .model/{bert_model_name}")
         for fname in ["bert_config.json", "vocab.txt", "bert_model.ckpt.meta", "bert_model.ckpt.index",
                       "bert_model.ckpt.data-00000-of-00001"]:
             print(f".model/{bert_model_name}/{fname}")
