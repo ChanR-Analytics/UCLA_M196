@@ -16,6 +16,8 @@ from tqdm import tqdm
 import tensorflow as tf
 from tensorflow import keras
 from bert.loader import StockBertConfig, map_stock_config_to_params, load_stock_weights
+from imblearn.keras import BalancedBatchGenerator,balanced_batch_generator
+from imblearn.under_sampling import NearMiss
 FullTokenizer = bert.bert_tokenization.FullTokenizer
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -229,7 +231,7 @@ class HatebaseTwitter():
         if isinstance(root_layer, keras.layers.Layer):
             yield root_layer
         for layer in root_layer._layers:
-            for sub_layer in flatten_layers(layer):
+            for sub_layer in self.flatten_layers(layer):
                 yield sub_layer
 
     def freeze_bert_layers(self,l_bert):
@@ -243,7 +245,7 @@ class HatebaseTwitter():
                 layer.trainable = False
             l_bert.embeddings_layer.trainable = False
 
-    def create_model(self, adapter_size=64):
+    def create_model(self, adapter_size=None):
         """Creates a classification model."""
 
         # adapter_size = 64  # see - arXiv:1902.00751
@@ -312,6 +314,54 @@ class HatebaseTwitter():
         ax.axis('equal')
         plt.title("Proportion of Tweet Classes", size=14)
         plt.show()
+
+    def classify(self):#, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
+
+        self.train_y[np.where(self.train_y == 1)] = 0
+        self.train_y[np.where(self.train_y == 2)] = 1
+        self.test_y[np.where(self.test_y == 1)] = 0
+        self.test_y[np.where(self.train_y == 2)] = 1
+
+        #log_dir = ".log/movie_reviews/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%s")
+        #tensorboard_callback = keras.callbacks.TensorBoard(log_dir=log_dir)
+        training_generator, steps_per_epoch = balanced_batch_generator(self.train_x, self.train_y,
+                                                                       batch_size=48,
+                                                                       random_state=100)
+        total_epoch_count = 30
+        # model.fit(x=(data.train_x, data.train_x_token_types), y=data.train_y,
+        self.model.fit(training_generator,
+                  epochs=total_epoch_count,
+                  steps_per_epoch=steps_per_epoch,
+                  # validation_split=0.1,
+                  callbacks=[  # keras.callbacks.LearningRateScheduler(time_decay,verbose=1),
+                      # lrate,
+                      self.create_learning_rate_scheduler(max_learn_rate=1e-5,
+                                                     end_learn_rate=5e-8,
+                                                     warmup_epoch_count=10,
+                                                     total_epoch_count=total_epoch_count)
+                      #,
+
+                      #keras.callbacks.EarlyStopping(patience=20, restore_best_weights=True)
+                  #    tensorboard_callback
+                  ])
+
+        self.model.save_weights('./movie_reviews.h5', overwrite=True)
+
+        # Y_pred = model.predict(X_test)
+        #
+        # # Accuracy Percentage
+        # print(f"Accuracy is {round(accuracy_score(Y_test, Y_pred), 2)*100}%")
+        #
+        # # Classification Report
+        # print(classification_report(Y_pred, Y_test))
+        #
+        # # Matthew's Correlation Coefficient
+        # print(f"Matthew's Correlation Coefficient is {matthews_corrcoef(Y_test, Y_pred)}")
+        #
+        # # Plots of Confusion Matrix and ROC Curve
+        # plot_confusion_matrix(Y_test, Y_pred, figsize=(10,10))
+        #
+        # return model
 
     # def features(self):
     #     tweets = self.df['tweet'].tolist()
