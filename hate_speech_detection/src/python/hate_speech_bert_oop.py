@@ -156,8 +156,8 @@ class HatebaseTwitter():
                 cmd = f"gsutil cp gs://bert_models/{bert_model_dir}/{bert_model_name}/{fname} .model/{bert_model_name}"
                 os.system(cmd)
         self._bert_ckpt_dir = os.path.join(".model/", bert_model_name)
-        self._bert_ckpt_file = os.path.join(bert_ckpt_dir, "bert_model.ckpt")
-        self._bert_config_file = os.path.join(bert_ckpt_dir, "bert_config.json")
+        self._bert_ckpt_file = os.path.join(self._bert_ckpt_dir, "bert_model.ckpt")
+        self._bert_config_file = os.path.join(self._bert_ckpt_dir, "bert_config.json")
 
     def bert_tokenize(self, train_split=0.3, max_seq_len=1024, verbose=False):
         self._tokenizer = FullTokenizer(vocab_file=os.path.join(self._bert_ckpt_dir, "vocab.txt"))
