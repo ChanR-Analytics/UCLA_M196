@@ -323,7 +323,7 @@ class HatebaseTwitter():
         plt.title("Proportion of Tweet Classes", size=14)
         plt.show()
 
-    def classify(self):#, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
+    def classify(self,total_epoch_count = 30, warmup_epoch_count = 10):#, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
 
         if self.type == "binary":
             self.train_y[np.where(self.train_y == 1)] = 0
@@ -336,7 +336,7 @@ class HatebaseTwitter():
         training_generator, steps_per_epoch = balanced_batch_generator(self.train_x, self.train_y,
                                                                        batch_size=48,
                                                                        random_state=100)
-        total_epoch_count = 30
+        #total_epoch_count = 30
         # model.fit(x=(data.train_x, data.train_x_token_types), y=data.train_y,
         self.model.fit(training_generator,
                   epochs=total_epoch_count,
@@ -346,7 +346,7 @@ class HatebaseTwitter():
                       # lrate,
                       self.create_learning_rate_scheduler(max_learn_rate=1e-5,
                                                      end_learn_rate=5e-8,
-                                                     warmup_epoch_count=10,
+                                                     warmup_epoch_count=warmup_epoch_count,
                                                      total_epoch_count=total_epoch_count)
                       #,
 
