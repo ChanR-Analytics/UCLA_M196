@@ -247,7 +247,7 @@ class HatebaseTwitter():
     def classify(self, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
 
         if type == 'binary':
-            y = self.df['class'].replace(0,1) 
+            y = self.df['class'].replace(0,1)
         elif type == 'multi':
             y = self.df['class']
         else:
@@ -270,11 +270,14 @@ class HatebaseTwitter():
         elif classifier == 'svc':
             model = LinearSVC(C=0.004, penalty='l2')
         elif classifier == 'rf':
-            model = RandomForestClassifier(n_estimators=500, bootstrap=True, max_depth=5)
+            n_est = int(input("Type in number of trees to estimate from: ").strip())
+            model = RandomForestClassifier(n_estimators=n_est, bootstrap=True, max_depth=5)
         elif classifier == 'xgb':
-            model = XGBClassifier(n_estimators=500, bootstrap=True, max_depth=5, reg_lamba=0.4)
+            n_est = int(input("Type in number of trees to estimate from: ").strip())
+            model = XGBClassifier(n_estimators=n_est, bootstrap=True, max_depth=5, reg_lamba=0.4)
         elif classifier == 'ada':
-            model = AdaBoostClassifier(n_estimators=500, bootstrap=True, learning_rate=0.005)
+            n_est = int(input("Type in number of trees to estimate from: ").strip())
+            model = AdaBoostClassifier(n_estimators=n_est, learning_rate=0.005)
         else:
             raise TypeError("Choose a proper classifier. Possible inputs: 'lr', 'svc', 'rf', 'xgb', 'ada' .")
 
