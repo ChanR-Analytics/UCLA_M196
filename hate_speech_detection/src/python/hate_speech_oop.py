@@ -247,7 +247,8 @@ class HatebaseTwitter():
     def classify(self, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
 
         if type == 'binary':
-            y = self.df['class'].replace(0, 1, inplace=True)
+            y = self.df['class']
+            y.replace(0, 1, inplace=True)
         elif type == 'multi':
             y = self.df['class']
         else:
@@ -276,7 +277,7 @@ class HatebaseTwitter():
         elif classifier == 'ada':
             model = AdaBoostClassifier(n_estimators=500, bootstrap=True, learning_rate=0.005)
         else:
-            raise TypeError("Choose a proper classifier. Possible inputs: 'lr', 'svc', 'rf', 'xgb', 'ada' .") 
+            raise TypeError("Choose a proper classifier. Possible inputs: 'lr', 'svc', 'rf', 'xgb', 'ada' .")
 
         if res == True:
             model.fit(X_res, Y_res)
