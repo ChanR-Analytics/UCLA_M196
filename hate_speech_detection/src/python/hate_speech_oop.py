@@ -253,7 +253,7 @@ class HatebaseTwitter():
         elif classifier == 'davidson':
             model = LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1')
         else:
-            raise TypeError("Please use a proper classifier.") 
+            raise TypeError("Please use a proper classifier.")
         dim_reduce = RFE(model, step=n)
         X_ = dim_reduce.fit_transform(X, y)
         return X_
@@ -312,7 +312,6 @@ class HatebaseTwitter():
         print(f"Matthew's Correlation Coefficient is {matthews_corrcoef(Y_test, Y_pred)}")
 
         # Plots of Confusion Matrix and ROC Curve
-        plt.figure(figsize=(10,10))
-        plot_confusion_matrix(Y_test, Y_pred)
+        plot_confusion_matrix(Y_test, Y_pred, figsize=(10,10)) 
 
         return model
