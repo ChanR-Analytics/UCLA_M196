@@ -276,7 +276,7 @@ class HatebaseTwitter():
         elif classifier == 'ada':
             model = AdaBoostClassifier(n_estimators=500, bootstrap=True, learning_rate=0.005)
         else:
-            raise TypeError("Choose a proper classifier.")
+            raise TypeError("Choose a proper classifier. Possible inputs: 'lr', 'svc', 'rf', 'xgb', 'ada' .") 
 
         if res == True:
             model.fit(X_res, Y_res)
