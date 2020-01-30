@@ -247,8 +247,7 @@ class HatebaseTwitter():
     def classify(self, X, type: str, classifier: str, test_prop: float, res: None, res_method: None):
 
         if type == 'binary':
-            y = self.df['class']
-            y.replace(0, 1, inplace=True)
+            y = self.df['class'].replace(0,1) 
         elif type == 'multi':
             y = self.df['class']
         else:
