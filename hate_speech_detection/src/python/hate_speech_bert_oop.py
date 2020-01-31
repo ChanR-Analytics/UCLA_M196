@@ -59,81 +59,6 @@ def preprocess(text_string):
     #parsed_text = parsed_text.code("utf-8", errors='ignore')
     return parsed_text
 
-# def tokenize(tweet):
-#     """Removes punctuation & excess whitespace, sets to lowercase,
-#     and stems tweets. Returns a list of stemmed tokens."""
-#     tweet = " ".join(re.split("[^a-zA-Z]*", tweet.lower())).strip()
-#     #tokens = re.split("[^a-zA-Z]*", tweet.lower())
-#     tokens = [stemmer.stem(t) for t in tweet.split()]
-#     return tokens
-#
-#
-# def basic_tokenize(tweet):
-#     """Same as tokenize but without the stemming"""
-#     tweet = " ".join(re.split("[^a-zA-Z.,!?]*", tweet.lower())).strip()
-#     return tweet.split()
-#
-# def count_twitter_objs(text_string):
-#     """
-#     Accepts a text string and replaces:
-#     1) urls with URLHERE
-#     2) lots of whitespace with one instance
-#     3) mentions with MENTIONHERE
-#     4) hashtags with HASHTAGHERE
-#     This allows us to get standardized counts of urls and mentions
-#     Without caring about specific people mentioned.
-#     Returns counts of urls, mentions, and hashtags.
-#     """
-#     space_pattern = '\s+'
-#     giant_url_regex = ('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|'
-#         '[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-#     mention_regex = '@[\w\-]+'
-#     hashtag_regex = '#[\w\-]+'
-#     parsed_text = re.sub(space_pattern, ' ', text_string)
-#     parsed_text = re.sub(giant_url_regex, 'URLHERE', parsed_text)
-#     parsed_text = re.sub(mention_regex, 'MENTIONHERE', parsed_text)
-#     parsed_text = re.sub(hashtag_regex, 'HASHTAGHERE', parsed_text)
-#     return(parsed_text.count('URLHERE'),parsed_text.count('MENTIONHERE'),parsed_text.count('HASHTAGHERE'))
-#
-# def other_features_(tweet):
-#     """This function takes a string and returns a list of features.
-#     These include Sentiment scores, Text and Readability scores,
-#     as well as Twitter specific features.
-#     This is modified to only include those features in the final
-#     model."""
-#
-#     sentiment = sentiment_analyzer.polarity_scores(tweet)
-#
-#     words = preprocess(tweet) #Get text only
-#
-#     syllables = textstat.syllable_count(words) #count syllables in words
-#     num_chars = sum(len(w) for w in words) #num chars in words
-#     num_chars_total = len(tweet)
-#     num_terms = len(tweet.split())
-#     num_words = len(words.split())
-#     avg_syl = round(float((syllables+0.001))/float(num_words+0.001),4)
-#     num_unique_terms = len(set(words.split()))
-#
-#     ###Modified FK grade, where avg words per sentence is just num words/1
-#     FKRA = round(float(0.39 * float(num_words)/1.0) + float(11.8 * avg_syl) - 15.59,1)
-#     ##Modified FRE score, where sentence fixed to 1
-#     FRE = round(206.835 - 1.015*(float(num_words)/1.0) - (84.6*float(avg_syl)),2)
-#
-#     twitter_objs = count_twitter_objs(tweet) #Count #, @, and http://
-#     features = [FKRA, FRE, syllables, num_chars, num_chars_total, num_terms, num_words,
-#                 num_unique_terms, sentiment['compound'],
-#                 twitter_objs[2], twitter_objs[1],]
-#     #features = pandas.DataFrame(features)
-#     return features
-#
-#
-# def get_feature_array(tweets):
-#     """Takes a list of tweets, generates features for
-#     each tweet, and returns a numpy array of tweet x features"""
-#     feats=[]
-#     for t in tweets:
-#         feats.append(other_features_(t))
-#     return np.array(feats)
 
 
 class HatebaseTwitter():
@@ -160,6 +85,7 @@ class HatebaseTwitter():
             else:
                 cmd = f"gsutil cp gs://bert_models/{bert_model_dir}/{bert_model_name}/{fname} .model/{bert_model_name}"
                 os.system(cmd)
+        self.vocab = pd.read_csv(".model/uncased_L-12_H-768_A-12/vocab.txt", sep=",,,",header=None)
         self._bert_ckpt_dir = os.path.join(".model/", bert_model_name)
         self._bert_ckpt_file = os.path.join(self._bert_ckpt_dir, "bert_model.ckpt")
         self._bert_config_file = os.path.join(self._bert_ckpt_dir, "bert_config.json")
@@ -169,7 +95,10 @@ class HatebaseTwitter():
         #self.sample_size = sample_size
         self.max_seq_len = 0
         self.df[self.data_column] = self.df[self.data_column].apply(lambda x: preprocess(x))
-        X_train, X_test, y_train, y_test = train_test_split(self.df[self.data_column], self.df[self.label_column], test_size=0.3,
+        # X_train, X_test, y_train, y_test = train_test_split(self.df[self.data_column], self.df[self.label_column], test_size=0.3,
+        #                                                     random_state=100, stratify=self.df[self.label_column])
+        X_train, X_test, y_train, y_test = train_test_split(self.df.drop(self.label_column,axis=1), self.df[self.label_column],
+                                                            test_size=0.3,
                                                             random_state=100, stratify=self.df[self.label_column])
         train = pd.concat([X_train, y_train], axis=1).reset_index().drop('index', axis=1)
         test = pd.concat([X_test, y_test], axis=1).reset_index().drop('index', axis=1)
@@ -178,7 +107,9 @@ class HatebaseTwitter():
             print(f"Train data shape: {test.shape}")
         train, test = map(lambda df: df.reindex(df[self.data_column].str.len().sort_values().index),
                           [train, test])
-
+        print(train.iloc[0])
+        self.train = train
+        self.test = test
         ((self.train_x, self.train_y),
          (self.test_x, self.test_y)) = map(self._prepare, [train, test])
 
@@ -372,85 +303,24 @@ class HatebaseTwitter():
         #
         # return model
 
-    # def features(self):
-    #     tweets = self.df['tweet'].tolist()
-    #     vectorizer = TfidfVectorizer(
-    #         tokenizer = tokenize,
-    #         preprocessor = preprocess,
-    #         ngram_range = (1,3),
-    #         stop_words = stopwords,
-    #         use_idf = True,
-    #         smooth_idf = False,
-    #         norm = None,
-    #         decode_error = 'replace',
-    #         max_features = 10000,
-    #         min_df = 5,
-    #         max_df = 0.75
-    #     )
-    #
-    #     # Constructing the TF IDF Matrix and Getting the Relevant Scores
-    #     tfidf = vectorizer.fit_transform(tweets).toarray()
-    #     vocab = {v:i for i,v in enumerate(vectorizer.get_feature_names())}
-    #     idf_vals = vectorizer.idf_
-    #     idf_dict = {i: idf_vals[i] for i in vocab.values()}
-    #
-    #     # Getting POS Tags for Tweets and Saving as a String
-    #     tweet_tags = []
-    #     for t in tweets:
-    #         tokens = basic_tokenize(preprocess(t))
-    #         tags = nltk.pos_tag(tokens)
-    #         tag_list = [x[1] for x in tags]
-    #         tag_str = " ".join(tag_list)
-    #         tweet_tags.append(tag_str)
-    #
-    #     # Use TF IDF vectorizer to get a token matrix for the POS tags
-    #     pos_vectorizer = TfidfVectorizer(
-    #         tokenizer=None,
-    #         lowercase=None,
-    #         preprocessor=None,
-    #         ngram_range = (1,3),
-    #         stop_words=None,
-    #         use_idf=False,
-    #         smooth_idf=False,
-    #         norm=None,
-    #         decode_error='replace',
-    #         max_features=5000,
-    #         min_df=5,
-    #         max_df=0.75,
-    #     )
-    #
-    #     # Construct POS TF Matrix and Get Vocabulary Dictionary
-    #     pos = pos_vectorizer.fit_transform(pd.Series(tweet_tags)).toarray()
-    #     pos_vocab = {v:i for i,v in enumerate(pos_vectorizer.get_feature_names())}
-    #
-    #     # Getting the Other Features
-    #     other_feature_names = ["FKRA", "FRE","num_syllables", "avg_syl_per_word", "num_chars", "num_chars_total", \
-    #                             "num_terms", "num_words", "num_unique_words", "vader neg","vader pos","vader neu", \
-    #                             "vader compound", "num_hashtags", "num_mentions", "num_urls", "is_retweet"]
-    #
-    #     feats = get_feature_array(tweets)
-    #
-    #     # Join Features Together
-    #     M = np.concatenate([tfidf, pos, feats], axis=1)
-    #
-    #     # Getting a List of Variable Names
-    #     variables = ['']*len(vocab)
-    #     for k,v in vocab.items():
-    #         variables[v] = k
-    #
-    #     pos_variables = ['']*len(pos_vocab)
-    #     for k,v in pos_vocab.items():
-    #         pos_variables[v] = k
-    #
-    #     self.feature_names = variables + pos_variables + other_feature_names
-    #
-    #     return M
-    #
-    # def l1_dim_reduce(self, M):
-    #     df = self.df
-    #     y = df['class']
-    #     X = pd.DataFrame(M)
-    #     dim_reduce = SelectFromModel(LogisticRegression(solver='liblinear', class_weight='balanced', C=0.04, penalty='l1'))
-    #     X_ = dim_reduce.fit_transform(X, y)
-    #     return X_
+    def tokenized_text(self, idx, bucket="train"):
+        if bucket == 'train':
+            df = self.train
+        elif bucket == 'test':
+            df = self.test
+        else:
+            raise TypeError("Choose a proper type of classification")
+        indices = np.atleast_1d(idx)
+        df_part = df.iloc[indices]
+        tokenized_text = pd.Series(list(self.train_x[indices.reshape((len(indices), 1))]),index=df_part.index)
+        df_part['tokens'] = tokenized_text
+        df_part['bert_words']=df_part['tokens'].apply(lambda x: [self.vocab.iloc[idx][0] for idx in x[0]])
+        for row in df_part[['tweet','tokens','bert_words']].itertuples():
+            print(row.tweet)
+            print(row.tokens)
+            print(row.bert_words)
+        #print(df_part.to_string())
+        return df_part
+
+
 
