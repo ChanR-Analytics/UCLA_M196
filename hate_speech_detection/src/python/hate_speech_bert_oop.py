@@ -288,7 +288,7 @@ class HatebaseTwitter():
         self.model.save_weights('./movie_reviews.h5', overwrite=True)
         Y_pred_probabilities = self.model.predict(self.test_x)
         Y_pred = np.argmax(Y_pred_probabilities,axis=-1)
-
+        self.pred_y = Y_pred
         # Accuracy Percentage
         print(f"Accuracy is {round(accuracy_score(self.test_y, Y_pred), 2)*100}%")
 
@@ -306,21 +306,39 @@ class HatebaseTwitter():
     def tokenized_text(self, idx, bucket="train"):
         if bucket == 'train':
             df = self.train
+            tokens = self.train_x
         elif bucket == 'test':
             df = self.test
+            tokens = self.test_x
         else:
             raise TypeError("Choose a proper type of classification")
         indices = np.atleast_1d(idx)
         df_part = df.iloc[indices]
-        tokenized_text = pd.Series(list(self.train_x[indices.reshape((len(indices), 1))]),index=df_part.index)
-        df_part['tokens'] = tokenized_text
-        df_part['bert_words']=df_part['tokens'].apply(lambda x: [self.vocab.iloc[idx][0] for idx in x[0]])
-        for row in df_part[['tweet','tokens','bert_words']].itertuples():
-            print(row.tweet)
-            print(row.tokens)
-            print(row.bert_words)
+        tokenized_text = pd.Series(list(tokens[indices.reshape((len(indices), 1))]), index=df_part.index)
+        #tokenized_text = tokenized_text[tokenized_text!=0]
+        #return tokenized_text
+        df_part['tokens'] = tokenized_text.apply(lambda x: x[x>0])
+        df_part['bert_words'] = df_part['tokens'].apply(lambda x: [self.vocab.iloc[idx][0] for idx in x])
+        # for row in df_part[['tweet','tokens','bert_words']].itertuples():
+        #     print(row.tweet)
+        #     print(row.tokens)
+        #     print(row.bert_words)
         #print(df_part.to_string())
         return df_part
+
+    def get_miss_classified(self):
+        df = self.test
+        predicted_class = pd.Series(self.pred_y,index=df.index)
+        df["class_predicted"] = predicted_class
+        print("INDICES \n \n \n")
+        indices = np.argwhere(df['class']!=df['class_predicted']).flatten()
+        print(len(indices))
+        print(indices)
+        df = self.tokenized_text(list(indices),"test")
+        print(df[df['class']!=df['class_predicted']].shape)
+        df = df[df['class']!=df['class_predicted']]
+
+        return df
 
 
 
