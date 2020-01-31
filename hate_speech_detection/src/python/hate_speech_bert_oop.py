@@ -90,7 +90,8 @@ class HatebaseTwitter():
         self._bert_ckpt_file = os.path.join(self._bert_ckpt_dir, "bert_model.ckpt")
         self._bert_config_file = os.path.join(self._bert_ckpt_dir, "bert_config.json")
 
-    def bert_tokenize(self, train_split=0.3, max_seq_len=1024, verbose=False):
+    def bert_tokenize(self, test_size=0.3, max_seq_len=1024, verbose=False):
+        """Converts the input textual data into tokenized array to be used on the input of BERT neural network"""
         self._tokenizer = FullTokenizer(vocab_file=os.path.join(self._bert_ckpt_dir, "vocab.txt"))
         #self.sample_size = sample_size
         self.max_seq_len = 0
@@ -98,7 +99,7 @@ class HatebaseTwitter():
         # X_train, X_test, y_train, y_test = train_test_split(self.df[self.data_column], self.df[self.label_column], test_size=0.3,
         #                                                     random_state=100, stratify=self.df[self.label_column])
         X_train, X_test, y_train, y_test = train_test_split(self.df.drop(self.label_column,axis=1), self.df[self.label_column],
-                                                            test_size=0.3,
+                                                            test_size=test_size,
                                                             random_state=100, stratify=self.df[self.label_column])
         train = pd.concat([X_train, y_train], axis=1).reset_index().drop('index', axis=1)
         test = pd.concat([X_test, y_test], axis=1).reset_index().drop('index', axis=1)
@@ -180,7 +181,8 @@ class HatebaseTwitter():
             l_bert.embeddings_layer.trainable = False
 
     def create_model(self, type: str, adapter_size=None):
-        """Creates a classification model."""
+        """Creates a classification model. Input parameters:
+         type: "binary" to build a model for binary classification, "multi" for multiclass classification. """
         self.type = type
         # adapter_size = 64  # see - arXiv:1902.00751
         if type == 'binary':
