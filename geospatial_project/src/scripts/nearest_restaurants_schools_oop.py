@@ -153,6 +153,6 @@ class nearest_restaurants:
         locations = df[['latitudes', 'longitudes']].values.tolist()
 
         for point in range(len(locations)):
-            Marker(locations[point], popup=df['listing_name'][point], sticky=True).add_to(cluster)
+            Marker(locations[point], popup=df['listing_name'][point]).add_to(cluster)
 
         return map
