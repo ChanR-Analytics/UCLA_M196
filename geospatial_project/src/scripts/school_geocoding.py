@@ -16,17 +16,10 @@ with open(f"{txt_path}/{listdir(txt_path)[1]}", "r") as my_file:
 
 print(school_names)
 
-new_school_names = []
 
-for name in school_names[1:]:
-    name_list = name.split(" ")
-    name_list.insert(1, 'High')
-    new_school_names.append(" ".join(name_list))
-
-school_names = [school_names[0]] + new_school_names
-
-print(school_names)
-
+school_names.remove('Diamond Bar')
+school_names.remove('west torrance')
+school_names.append('West Torrance High School')
 # Configuring Google Maps Client
 gmaps = googlemaps.Client(key= getpass("Input your API key"))
 
