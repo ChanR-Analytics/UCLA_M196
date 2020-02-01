@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import googlemaps
+from folium import Map, Marker
+from folium.plugins import MarkerCluster
 from haversine import haversine
 from os import listdir
 
@@ -133,3 +135,24 @@ class nearest_restaurants:
             merged_results[key] = value
 
         return merged_results
+
+    def visualize_map(self, df, theme=None):
+
+        dark_attr = "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png"
+        positron_attr = "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png"
+        osm_attr = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        if theme == 'dark':
+            map = Map(location=[34.0522, -118.2437], control_scale=True, zoom_start=12, attr=dark_attr, tiles="cartodbdark_matter")
+        elif theme == 'positron':
+            map = Map(location=[34.0522, -118.2437], control_scale=True, zoom_start=12, attr=positron_attr, tiles="cartodbpositron")
+        else:
+            map = Map(location=[34.0522, -118.2437], control_scale=True, zoom_start=12, attr=osm_attr, tiles="openstreetmap")
+
+        cluster = MarkerCluster().add_to(map)
+
+        locations = df[['latitudes', 'longitudes']].values.tolist()
+
+        for point in range(len(locations)):
+            Marker(locations[point], popup=f"{df['names'][point]} \n {df['school_name']}").add_to(map)
+
+        return map 
