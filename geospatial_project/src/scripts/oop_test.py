@@ -43,4 +43,6 @@ for school in google_results.keys():
 
 merged_df_results = nr.merge_frames(nr_frame_dict, haversine_results, google_results)
 
-merged_df_results['Arcadia High School']
+arcadia_frame = merged_df_results['Arcadia High School']
+
+map = nr.visualize_map(arcadia_frame, theme='dark')

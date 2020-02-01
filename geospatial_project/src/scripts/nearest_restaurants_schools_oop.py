@@ -65,7 +65,7 @@ class nearest_restaurants:
                     total_user_ratings.append(user_rating)
                     ratings.append(rating)
                     price_levels.append(price_level)
-                format_result_dict[school] = {'names': names, 'latitudes': latitudes, 'longitudes': longitudes, 'total_user_ratings': total_user_ratings, 'ratings': ratings, 'price_levels': price_levels}
+                format_result_dict[school] = {'school_name': school, 'listing_name': names, 'latitudes': latitudes, 'longitudes': longitudes, 'total_user_ratings': total_user_ratings, 'ratings': ratings, 'price_levels': price_levels}
 
         format_result_df_dict = {school: pd.DataFrame.from_dict(format_result_dict[school]) for school in format_result_dict.keys()}
         return format_result_df_dict
@@ -153,6 +153,6 @@ class nearest_restaurants:
         locations = df[['latitudes', 'longitudes']].values.tolist()
 
         for point in range(len(locations)):
-            Marker(locations[point], popup=f"{df['names'][point]} \n {df['school_name']}").add_to(map)
+            Marker(locations[point], popup=f"{df['listing_name'][point]} \n {df['school_name']}").add_to(cluster) 
 
-        return map 
+        return map
