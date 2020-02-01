@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import googlemaps
-from folium import Map, Marker
+from folium import Map, Marker, Popup
 from folium.plugins import MarkerCluster
 from haversine import haversine
 from os import listdir
@@ -153,6 +153,6 @@ class nearest_restaurants:
         locations = df[['latitudes', 'longitudes']].values.tolist()
 
         for point in range(len(locations)):
-            Marker(locations[point], popup=f"{df['listing_name'][point]} \n {df['school_name']}").add_to(cluster) 
+            Marker(locations[point], popup=Popup(f"{df['listing_name'][point]} \n {df['school_name']}", sticky=True)).add_to(cluster) 
 
         return map
